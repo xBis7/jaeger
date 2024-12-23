@@ -45,6 +45,9 @@ import (
 
 // all-in-one/main is a standalone full-stack jaeger backend, backed by a memory store
 func main() {
+	println("********************")
+	println("*** x: custom ***")
+	println("********************")
 	flags.PrintV1EOL()
 	setupcontext.SetAllInOne()
 
