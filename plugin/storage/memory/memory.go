@@ -176,6 +176,19 @@ func (st *Store) WriteSpan(ctx context.Context, span *model.Span) error {
 			m.ids[m.index] = &span.TraceID
 		}
 	}
+
+	// if config.SpanOverwriteEnabled
+
+	// If the span already exists, then remove it, so that it can be replaced.
+	existingSpans := m.traces[span.TraceID].Spans
+	for i, existingSpan := range existingSpans {
+		if existingSpan.SpanID == span.SpanID {
+			// Remove the old span from the slice.
+			m.traces[span.TraceID].Spans = append(existingSpans[:i], existingSpans[i+1:]...)
+			break
+		}
+	}
+
 	m.traces[span.TraceID].Spans = append(m.traces[span.TraceID].Spans, span)
 
 	return nil

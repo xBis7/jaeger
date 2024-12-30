@@ -55,6 +55,7 @@ func (b *SpanHandlerBuilder) BuildSpanProcessor(additional ...ProcessSpan) proce
 		Options.DynQueueSizeWarmup(b.CollectorOpts.QueueSize), // same as queue size for now
 		Options.DynQueueSizeMemory(b.CollectorOpts.DynQueueSizeMemory),
 		Options.SpanSizeMetricsEnabled(b.CollectorOpts.SpanSizeMetricsEnabled),
+		Options.SpanOverwriteEnabled(b.CollectorOpts.SpanOverwriteEnabled),
 	)
 }
 

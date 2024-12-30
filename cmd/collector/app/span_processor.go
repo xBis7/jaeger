@@ -6,6 +6,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -111,6 +112,8 @@ func newSpanProcessor(spanWriter spanstore.Writer, additional []ProcessSpan, opt
 		dynQueueSizeWarmup: options.dynQueueSizeWarmup,
 	}
 
+	fmt.Println("x: options.spanOverwriteEnabled", options.spanOverwriteEnabled)
+
 	processSpanFuncs := []ProcessSpan{options.preSave, sp.saveSpan}
 	if options.dynQueueSizeMemory > 0 {
 		options.logger.Info("Dynamically adjusting the queue size at runtime.",
@@ -141,7 +144,11 @@ func (sp *spanProcessor) saveSpan(span *model.Span, tenant string) {
 		sp.metrics.SavedErrBySvc.ReportServiceNameForSpan(span)
 		return
 	}
-
+	sp.logger.Info("x: save:",
+		zap.Stringer("trace-id", span.TraceID),
+		zap.Stringer("span-id", span.SpanID),
+		zap.Stringer("start-time", span.StartTime),
+		zap.Stringer("duration", span.Duration))
 	startTime := time.Now()
 	// Since we save spans asynchronously from receiving them, we cannot reuse
 	// the inbound Context, as it may be cancelled by the time we reach this point,

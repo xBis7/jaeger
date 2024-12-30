@@ -31,6 +31,7 @@ type options struct {
 	extraFormatTypes       []processor.SpanFormat
 	collectorTags          map[string]string
 	spanSizeMetricsEnabled bool
+	spanOverwriteEnabled   bool
 	onDroppedSpan          func(span *model.Span)
 }
 
@@ -151,6 +152,13 @@ func (options) CollectorTags(extraTags map[string]string) Option {
 func (options) SpanSizeMetricsEnabled(spanSizeMetrics bool) Option {
 	return func(b *options) {
 		b.spanSizeMetricsEnabled = spanSizeMetrics
+	}
+}
+
+// SpanOverwriteEnabled creates an Option that initializes the spanOverwrite boolean
+func (options) SpanOverwriteEnabled(spanOverwrite bool) Option {
+	return func(b *options) {
+		b.spanOverwriteEnabled = spanOverwrite
 	}
 }
 

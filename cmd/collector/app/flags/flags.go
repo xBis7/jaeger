@@ -27,6 +27,7 @@ const (
 	flagQueueSize              = "collector.queue-size"
 	flagCollectorTags          = "collector.tags"
 	flagSpanSizeMetricsEnabled = "collector.enable-span-size-metrics"
+	flagSpanOverwriteEnabled   = "collector.enable-span-overwrite"
 
 	flagSuffixHostPort = "host-port"
 
@@ -130,6 +131,8 @@ type CollectorOptions struct {
 	CollectorTags map[string]string
 	// SpanSizeMetricsEnabled determines whether to enable metrics based on processed span size
 	SpanSizeMetricsEnabled bool
+	// Spans need to be overwritten when receiving incremental updates with partial spans
+	SpanOverwriteEnabled bool
 
 	Tenancy tenancy.Options
 }
@@ -147,6 +150,7 @@ func AddFlags(flagSet *flag.FlagSet) {
 	flagSet.Uint(flagDynQueueSizeMemory, 0, "(experimental) The max memory size in MiB to use for the dynamic queue.")
 	flagSet.String(flagCollectorTags, "", "One or more tags to be added to the Process tags of all spans passing through this collector. Ex: key1=value1,key2=${envVar:defaultValue}")
 	flagSet.Bool(flagSpanSizeMetricsEnabled, false, "Enables metrics based on processed span size, which are more expensive to calculate.")
+	flagSet.Bool(flagSpanOverwriteEnabled, false, "Enables overwriting existing spans. This is used for incremental updates with partial spans.")
 
 	addHTTPFlags(flagSet, httpServerFlagsCfg, ports.PortToHostPort(ports.CollectorHTTP))
 	addGRPCFlags(flagSet, grpcServerFlagsCfg, ports.PortToHostPort(ports.CollectorGRPC))
@@ -232,6 +236,7 @@ func (cOpts *CollectorOptions) InitFromViper(v *viper.Viper, _ *zap.Logger) (*Co
 	cOpts.QueueSize = v.GetUint(flagQueueSize)
 	cOpts.DynQueueSizeMemory = v.GetUint(flagDynQueueSizeMemory) * 1024 * 1024 // we receive in MiB and store in bytes
 	cOpts.SpanSizeMetricsEnabled = v.GetBool(flagSpanSizeMetricsEnabled)
+	cOpts.SpanOverwriteEnabled = v.GetBool(flagSpanOverwriteEnabled)
 	cOpts.Tenancy = tenancy.InitFromViper(v)
 
 	if err := initHTTPFromViper(v, &cOpts.HTTP, httpServerFlagsCfg); err != nil {
