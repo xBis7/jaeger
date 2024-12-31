@@ -138,6 +138,40 @@ func traceIsBetweenStartAndEnd(startTs, endTs time.Time, trace *model.Trace) boo
 	return false
 }
 
+// DeleteSpan deletes the given span
+func (st *Store) DeleteSpan(ctx context.Context, span *model.Span) error {
+	m := st.getTenant(tenancy.GetTenant(ctx))
+	m.Lock()
+	defer m.Unlock()
+	if _, ok := m.operations[span.Process.ServiceName]; !ok {
+		m.operations[span.Process.ServiceName] = map[spanstore.Operation]struct{}{}
+	}
+
+	spanKind, _ := span.GetSpanKind() // if not found it returns Unspecified
+	operation := spanstore.Operation{
+		Name:     span.OperationName,
+		SpanKind: string(spanKind),
+	}
+
+	if _, ok := m.operations[span.Process.ServiceName][operation]; !ok {
+		m.operations[span.Process.ServiceName][operation] = struct{}{}
+	}
+
+	m.services[span.Process.ServiceName] = struct{}{}
+
+	// If the span already exists, then remove it, so that it can be replaced.
+	existingSpans := m.traces[span.TraceID].Spans
+	for i, existingSpan := range existingSpans {
+		if existingSpan.SpanID == span.SpanID {
+			// Remove the old span from the slice.
+			m.traces[span.TraceID].Spans = append(existingSpans[:i], existingSpans[i+1:]...)
+			break
+		}
+	}
+
+	return nil
+}
+
 // WriteSpan writes the given span
 func (st *Store) WriteSpan(ctx context.Context, span *model.Span) error {
 	m := st.getTenant(tenancy.GetTenant(ctx))
@@ -176,19 +210,6 @@ func (st *Store) WriteSpan(ctx context.Context, span *model.Span) error {
 			m.ids[m.index] = &span.TraceID
 		}
 	}
-
-	// if config.SpanOverwriteEnabled
-
-	// If the span already exists, then remove it, so that it can be replaced.
-	existingSpans := m.traces[span.TraceID].Spans
-	for i, existingSpan := range existingSpans {
-		if existingSpan.SpanID == span.SpanID {
-			// Remove the old span from the slice.
-			m.traces[span.TraceID].Spans = append(existingSpans[:i], existingSpans[i+1:]...)
-			break
-		}
-	}
-
 	m.traces[span.TraceID].Spans = append(m.traces[span.TraceID].Spans, span)
 
 	return nil

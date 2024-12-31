@@ -112,9 +112,15 @@ func newSpanProcessor(spanWriter spanstore.Writer, additional []ProcessSpan, opt
 		dynQueueSizeWarmup: options.dynQueueSizeWarmup,
 	}
 
-	fmt.Println("x: options.spanOverwriteEnabled", options.spanOverwriteEnabled)
+	processSpanFuncs := []ProcessSpan{options.preSave}
 
-	processSpanFuncs := []ProcessSpan{options.preSave, sp.saveSpan}
+	// deleteExistingSpan needs to execute before saveSpan.
+	if options.spanOverwriteEnabled {
+		processSpanFuncs = append(processSpanFuncs, sp.deleteExistingSpan)
+	}
+
+	processSpanFuncs = append(processSpanFuncs, sp.saveSpan)
+
 	if options.dynQueueSizeMemory > 0 {
 		options.logger.Info("Dynamically adjusting the queue size at runtime.",
 			zap.Uint("memory-mib", options.dynQueueSizeMemory/1024/1024),
@@ -138,17 +144,40 @@ func (sp *spanProcessor) Close() error {
 	return nil
 }
 
+func (sp *spanProcessor) deleteExistingSpan(span *model.Span, tenant string) {
+	fmt.Println("x: deleteExistingSpan")
+	if nil == span.Process {
+		sp.logger.Error("process is empty for the span")
+		// TODO: add metrics.
+		//sp.metrics.DeletedErrBySvc.ReportServiceNameForSpan(span)
+		return
+	}
+
+	// TODO: add metrics.
+	//startTime := time.Now()
+	ctx := tenancy.WithTenant(context.Background(), tenant)
+	if err := sp.spanWriter.DeleteSpan(ctx, span); err != nil {
+		sp.logger.Error("Failed to delete span", zap.Error(err))
+		// TODO: add metrics.
+		//sp.metrics.DeletedErrBySvc.ReportServiceNameForSpan(span)
+	} else {
+		sp.logger.Debug("Span deleted from the storage by the collector",
+			zap.Stringer("trace-id", span.TraceID), zap.Stringer("span-id", span.SpanID))
+		// TODO: add metrics.
+		//sp.metrics.DeletedOkBySvc.ReportServiceNameForSpan(span)
+	}
+	// TODO: add metrics.
+	//sp.metrics.DeleteLatency.Record(time.Since(startTime))
+}
+
 func (sp *spanProcessor) saveSpan(span *model.Span, tenant string) {
+	fmt.Println("x: saveSpan")
 	if nil == span.Process {
 		sp.logger.Error("process is empty for the span")
 		sp.metrics.SavedErrBySvc.ReportServiceNameForSpan(span)
 		return
 	}
-	sp.logger.Info("x: save:",
-		zap.Stringer("trace-id", span.TraceID),
-		zap.Stringer("span-id", span.SpanID),
-		zap.Stringer("start-time", span.StartTime),
-		zap.Stringer("duration", span.Duration))
+
 	startTime := time.Now()
 	// Since we save spans asynchronously from receiving them, we cannot reuse
 	// the inbound Context, as it may be cancelled by the time we reach this point,
