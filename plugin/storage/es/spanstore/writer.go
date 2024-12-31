@@ -120,6 +120,12 @@ func getSpanAndServiceIndexFn(p SpanWriterParams) spanAndServiceIndexFn {
 	}
 }
 
+// DeleteSpan deletes a span and its corresponding service:operation in ElasticSearch
+func (s *SpanWriter) DeleteSpan(_ context.Context, span *model.Span) error {
+	// TODO: implement this or throw an error that it shouldn't be used.
+	return nil
+}
+
 // WriteSpan writes a span and its corresponding service:operation in ElasticSearch
 func (s *SpanWriter) WriteSpan(_ context.Context, span *model.Span) error {
 	spanIndexName, serviceIndexName := s.spanServiceIndex(span.StartTime)

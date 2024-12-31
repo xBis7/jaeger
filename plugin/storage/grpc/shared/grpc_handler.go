@@ -129,6 +129,12 @@ func (s *GRPCHandler) WriteSpanStream(stream storage_v1.StreamingSpanWriterPlugi
 	return stream.SendAndClose(&storage_v1.WriteSpanResponse{})
 }
 
+// DeleteSpan deletes the span
+func (s *GRPCHandler) DeleteSpan(ctx context.Context, r *storage_v1.WriteSpanRequest) (*storage_v1.WriteSpanResponse, error) {
+	// TODO: implement this or throw an error that it shouldn't be used.
+	return &storage_v1.WriteSpanResponse{}, nil
+}
+
 // WriteSpan saves the span
 func (s *GRPCHandler) WriteSpan(ctx context.Context, r *storage_v1.WriteSpanRequest) (*storage_v1.WriteSpanResponse, error) {
 	err := s.impl.SpanWriter().WriteSpan(ctx, r.Span)

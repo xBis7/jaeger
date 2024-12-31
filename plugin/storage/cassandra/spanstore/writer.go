@@ -129,6 +129,12 @@ func (s *SpanWriter) Close() error {
 	return nil
 }
 
+// DeleteSpan deletes the span from Cassandra
+func (s *SpanWriter) DeleteSpan(_ context.Context, span *model.Span) error {
+	// TODO: implement this or throw an error that it shouldn't be used.
+	return nil
+}
+
 // WriteSpan saves the span into Cassandra
 func (s *SpanWriter) WriteSpan(_ context.Context, span *model.Span) error {
 	ds := dbmodel.FromDomain(span)

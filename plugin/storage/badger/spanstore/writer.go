@@ -53,6 +53,12 @@ func NewSpanWriter(db *badger.DB, c *CacheStore, ttl time.Duration) *SpanWriter 
 	}
 }
 
+// DeleteSpan deletes the encoded span as well as deletes indexes with defined TTL
+func (w *SpanWriter) DeleteSpan(_ context.Context, span *model.Span) error {
+	// TODO: implement this or throw an error that it shouldn't be used.
+	return nil
+}
+
 // WriteSpan writes the encoded span as well as creates indexes with defined TTL
 func (w *SpanWriter) WriteSpan(_ context.Context, span *model.Span) error {
 	//nolint: gosec // G115

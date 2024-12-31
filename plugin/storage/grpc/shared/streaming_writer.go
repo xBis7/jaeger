@@ -35,6 +35,12 @@ func newStreamingSpanWriter(client storage_v1.StreamingSpanWriterPluginClient) *
 	return s
 }
 
+// DeleteSpan delete span
+func (s *streamingSpanWriter) DeleteSpan(ctx context.Context, span *model.Span) error {
+	// TODO: implement this or throw an error that it shouldn't be used.
+	return nil
+}
+
 // WriteSpan write span into stream
 func (s *streamingSpanWriter) WriteSpan(ctx context.Context, span *model.Span) error {
 	stream, err := s.getStream(ctx)

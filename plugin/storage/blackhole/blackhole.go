@@ -30,6 +30,11 @@ func (*Store) GetDependencies(context.Context, time.Time /* endTs */, time.Durat
 	return []model.DependencyLink{}, nil
 }
 
+// DeleteSpan deletes the given span to blackhole.
+func (*Store) DeleteSpan(context.Context, *model.Span) error {
+	return nil
+}
+
 // WriteSpan writes the given span to blackhole.
 func (*Store) WriteSpan(context.Context, *model.Span) error {
 	return nil

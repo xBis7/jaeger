@@ -68,6 +68,12 @@ func (*archiveReader) FindTraceIDs(context.Context, *spanstore.TraceQueryParamet
 	return nil, errors.New("FindTraceIDs not implemented")
 }
 
+// DeleteSpan deletes the span from Archive Storage
+func (w *archiveWriter) DeleteSpan(ctx context.Context, span *model.Span) error {
+	// TODO: implement this or throw an error that it shouldn't be used.
+	return nil
+}
+
 // WriteSpan saves the span into Archive Storage
 func (w *archiveWriter) WriteSpan(ctx context.Context, span *model.Span) error {
 	_, err := w.client.WriteArchiveSpan(ctx, &storage_v1.WriteSpanRequest{

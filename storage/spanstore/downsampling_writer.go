@@ -56,6 +56,17 @@ func NewDownsamplingWriter(spanWriter Writer, downsamplingOptions DownsamplingOp
 	}
 }
 
+// DeleteSpan calls DeleteSpan on wrapped span writer.
+func (ds *DownsamplingWriter) DeleteSpan(ctx context.Context, span *model.Span) error {
+	if !ds.sampler.ShouldSample(span) {
+		// Drops spans when hashVal falls beyond computed threshold.
+		ds.metrics.SpansDropped.Inc(1)
+		return nil
+	}
+	ds.metrics.SpansAccepted.Inc(1) // TODO: revisit the metrics on this method.
+	return ds.spanWriter.DeleteSpan(ctx, span)
+}
+
 // WriteSpan calls WriteSpan on wrapped span writer.
 func (ds *DownsamplingWriter) WriteSpan(ctx context.Context, span *model.Span) error {
 	if !ds.sampler.ShouldSample(span) {

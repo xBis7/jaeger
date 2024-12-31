@@ -199,6 +199,12 @@ func (c *GRPCClient) FindTraceIDs(ctx context.Context, query *spanstore.TraceQue
 	return resp.TraceIDs, nil
 }
 
+// DeleteSpan deletes the span.
+func (c *GRPCClient) DeleteSpan(ctx context.Context, span *model.Span) error {
+	// TODO: implement this or throw an error that it shouldn't be used.
+	return nil
+}
+
 // WriteSpan saves the span
 func (c *GRPCClient) WriteSpan(ctx context.Context, span *model.Span) error {
 	_, err := c.writerClient.WriteSpan(ctx, &storage_v1.WriteSpanRequest{
