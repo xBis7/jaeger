@@ -160,15 +160,17 @@ func (st *Store) DeleteSpan(ctx context.Context, span *model.Span) error {
 	m.services[span.Process.ServiceName] = struct{}{}
 
 	// If the span already exists, then remove it, so that it can be replaced.
-	existingSpans := m.traces[span.TraceID].Spans
-	for i, existingSpan := range existingSpans {
-		if existingSpan.SpanID == span.SpanID {
-			// Remove the old span from the slice.
-			m.traces[span.TraceID].Spans = append(existingSpans[:i], existingSpans[i+1:]...)
-			break
+	trace, ok := m.traces[span.TraceID] // If not found, then return.
+	if ok {
+		existingSpans := trace.Spans
+		for i, existingSpan := range existingSpans {
+			if existingSpan.SpanID == span.SpanID {
+				// Remove the old span from the slice.
+				m.traces[span.TraceID].Spans = append(existingSpans[:i], existingSpans[i+1:]...)
+				break
+			}
 		}
 	}
-
 	return nil
 }
 
